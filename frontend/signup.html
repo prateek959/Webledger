@@ -128,6 +128,7 @@
     </div>
 
     <script>
+          const API = "http://localhost:3030"
         document.getElementById("signup-form").addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -146,7 +147,7 @@
 
             try {
                 
-                const response = await fetch('http://localhost:3030/user/register', {
+                const response = await fetch(`${API}/user/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

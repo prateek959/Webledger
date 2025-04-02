@@ -193,6 +193,7 @@
     </div>
 
     <script>
+        const API = "http://localhost:3030"
         function searchRecipes() {
             const query = document.getElementById("recipe").value;
             const token = localStorage.getItem('authToken');
@@ -202,7 +203,7 @@
                 return;
             }
             
-            fetch('http://localhost:3030/recipe/search', {
+            fetch(`${API}/recipe/search`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
