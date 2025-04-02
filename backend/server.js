@@ -11,7 +11,7 @@ app.use(express.json());
 //     credentials: true
 // };
 app.use(cors({
-    origin:["http://127.0.0.1:5500"],
+    origin:["http://127.0.0.1:5500","https://webledger.netlify.app"],
     credentials: true
 }));
 
