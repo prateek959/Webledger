@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Search - Recipe World</title>
+    <title>Favourite Recipes - Recipe World</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -187,9 +187,8 @@
 
     <div class="main-container">
         <div class="search-container">
-            <h2>Find a Recipe</h2>
-            <input type="text" id="recipe" placeholder="Enter Recipe Name">
-            <button onclick="searchRecipes()">Search</button>
+            <h2>Your Favourite Recipes</h2>
+            <input type="text" id="search" placeholder="Search your favourite dish" oninput="filterFavourites()">
         </div>
 
         <div class="recipe-cards" id="recipe-results"></div>
@@ -203,62 +202,80 @@
         // const API = "http://localhost:3030";
         const API = "https://webledger-zghe.onrender.com"
         function logout() {
-        localStorage.removeItem('authToken');
-        window.location.href = 'login.html';
-    }
-        function searchRecipes() {
-            const query = document.getElementById("recipe").value;
-            const token = localStorage.getItem('authToken');
+            localStorage.removeItem('authToken');
+            window.location.href = 'login.html';
+        }
 
+        async function fetchFavourites() {
+            const token = localStorage.getItem('authToken');
             if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            fetch(`${API}/recipe/search`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ recipe: query })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const resultsDiv = document.getElementById("recipe-results");
-                    resultsDiv.innerHTML = '';
+            try {
+                const response = await fetch(`${API}/recipe/get`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-                    if (data.length === 0) {
-                        resultsDiv.innerHTML = '<p>No recipes found.</p>';
-                    } else {
-                        data.forEach(recipe => {
-                            const card = document.createElement("div");
-                            card.classList.add("recipe-card");
-                            card.innerHTML = `
-                            <img src="${recipe.image}" alt="${recipe.title}">
-                            <h3>${recipe.title}</h3>
-                            <button onclick="addFavourite('${recipe.title}', '${recipe.image}')">Add favourite</button>
-                        `;
-                            resultsDiv.appendChild(card);
-                        });
-                    }
-                })
-                .catch(error => console.error("Error fetching recipes:", error));
+                const data = await response.json();
+                // console.log(data);
+                if (!Array.isArray(data)) {
+                    console.error("Invalid response format:", data);
+                    return;
+                }
+
+                displayFavourites(data);
+            } catch (error) {
+                console.error("Error fetching favourites:", error);
+            }
         }
-        searchRecipes();
-        function addFavourite(title, image) {
-            fetch(`${API}/recipe/add`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                },
-                body: JSON.stringify({ title, image })
-            })
-                .then(response => response.json())
-                .then(data => alert(data.msg))
-                .catch(error => console.error("Error adding favourite:", error));
+
+        function displayFavourites(favourites) {
+            const resultsDiv = document.getElementById("recipe-results");
+            resultsDiv.innerHTML = "";
+
+            favourites.forEach(recipe => {
+                const card = document.createElement("div");
+                card.classList.add("recipe-card");
+                card.setAttribute("data-title", recipe.title.toLowerCase());
+
+                card.innerHTML = `
+                    <img src="${recipe.image}" alt="${recipe.title}">
+                    <h3>${recipe.title}</h3>
+                    <button onclick="removeFavourite('${recipe._id}')">Remove</button>
+                `;
+
+                resultsDiv.appendChild(card);
+            });
         }
+
+        async function removeFavourite(recipeId) {
+            const token = localStorage.getItem('authToken');
+            try {
+                const response = await fetch(`${API}/recipe/remove/${recipeId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                alert(result.msg);
+                fetchFavourites();
+            } catch (error) {
+                console.error("Error removing favourite:", error);
+            }
+        }
+
+        function filterFavourites() {
+            const searchQuery = document.getElementById("search").value.toLowerCase();
+            document.querySelectorAll(".recipe-card").forEach(card => {
+                const title = card.getAttribute("data-title");
+                card.style.display = title.includes(searchQuery) ? "block" : "none";
+            });
+        }
+
+        fetchFavourites();
     </script>
 </body>
 

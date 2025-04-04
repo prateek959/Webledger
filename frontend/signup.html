@@ -105,7 +105,7 @@
     <div class="signup-container">
         <h2>Create an Account</h2>
 
-       
+
         <form id="signup-form">
             <div class="input-group">
                 <label for="username">Username</label>
@@ -129,6 +129,7 @@
 
     <script>
           const API = "https://webledger-zghe.onrender.com"
+        // const API = "http://localhost:3030"
         document.getElementById("signup-form").addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -136,17 +137,17 @@
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            
+
             if (username === "" || email === "" || password === "") {
                 alert("Please fill in all the fields.");
                 return;
             }
 
-           
+
             const userData = { username, email, password };
 
             try {
-                
+
                 const response = await fetch(`${API}/user/register`, {
                     method: 'POST',
                     headers: {
@@ -155,12 +156,12 @@
                     body: JSON.stringify(userData)
                 });
 
-            
+
                 const result = await response.json();
 
                 if (response.ok) {
                     alert("Account created successfully!");
-                    window.location.href = "login.html"; 
+                    window.location.href = "login.html";
                 } else {
                     alert(result.message || "Something went wrong. Please try again.");
                 }
